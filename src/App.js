@@ -1,23 +1,125 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import { EditarUsuario } from "./components/EditarUsuario/Editar";
+import AddUsuario from "./components/CadastraUsuario/AddUsuario";
+import { Header } from "./components/Header/Header";
+import {
+  ContainerPrincipal,
+  ContainerBarra,
+  ButtonCadastro,
+  BoxCadastro,
+} from "./Appstyle";
 
 function App() {
+  const [usuarios, setUsuarios] = useState([]);
+  const [pageFlow, setPageFlow] = useState(1);
+  const [nome, setNome] = useState("");
+  const [email, setEmail] = useState("");
+  const [pesquisa, setPesquisa] = useState({ nome: "", email: "" });
+
+  useEffect(() => {
+    getUsuarios();
+  }, []);
+
+  const getUsuarios = async () => {
+    
+  await axios
+      .get(
+        "https://us-central1-labenu-apis.cloudfunctions.net/labenusers/users",
+        {
+          headers: {
+            Authorization: "kieffer-torricilia-barbosa",
+          },
+        }
+      )
+      .then((res) => {
+        setUsuarios(res.data);
+      })
+      .catch((error) => {
+        console.log(error.response);
+      });
+  };
+
+  const pesquisaUsuario = (pesquisa) => {
+   
+  };
+
+  const onChangeName = (e) => {
+    setNome(e.target.value);
+  };
+
+  const onChangeEmail = (e) => {
+    setEmail(e.target.value);
+  };
+
+  const enviarDados = () => {
+    const novaPesquisa = {
+      nome,
+      email,
+    };
+    setPesquisa(novaPesquisa);
+   
+    setNome("")
+    setEmail("")
+    
+  };
+
+  const onClickVoltar = () => {
+    getUsuarios();
+    setPageFlow(1)
+  }
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div>
+      <Header />
+      <ContainerPrincipal>
+        {pageFlow === 2 ? (
+          <BoxCadastro>
+            <button onClick={() => setPageFlow(1)}>Voltar</button>
+            <AddUsuario getUsuarios={getUsuarios} />
+          </BoxCadastro>
+        ) : (
+          <>
+            <ContainerBarra>
+              <div>
+                <input
+                  value={nome}
+                  onChange={onChangeName}
+                  placeholder="Nome"
+                />
+                <input
+                  value={email}
+                  onChange={onChangeEmail}
+                  placeholder="Email"
+                />
+                <button type="submit" onClick={enviarDados}>
+                  Pesquisar
+                </button>
+              </div>
+              {pageFlow === 3 ? (
+                <ButtonCadastro onClick={onClickVoltar}>Voltar</ButtonCadastro>
+              ) : (
+                <ButtonCadastro onClick={() => setPageFlow(2)}>
+                  Cadastrar
+                </ButtonCadastro>
+              )}
+              
+            </ContainerBarra>
+            {usuarios.map((usuario) => {
+              return (
+                <EditarUsuario
+                  key={usuario.id}
+                  id={usuario.id}
+                  getUsuarios={getUsuarios}
+                  setPageFlow={setPageFlow}
+                  pageFlow={pageFlow}
+                />
+              );
+            })}
+          </>
+        )}
+        
+      </ContainerPrincipal>
     </div>
   );
 }
