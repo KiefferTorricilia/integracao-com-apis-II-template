@@ -6,30 +6,30 @@ function AddUsuario(props) {
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
 
-  const postNovoUsuario = () => {
+  const postNovoUsuario = async () => {
     const body = {
       name: nome,
       email
     };
-    axios
-      .post(
-        `https://us-central1-labenu-apis.cloudfunctions.net/labenusers/users`,
-        body,
-        {
-          headers: {
-            Authorization: "kieffer-torricilia-barbosa"
+    try {
+      await axios
+        .post(
+          `https://us-central1-labenu-apis.cloudfunctions.net/labenusers/users`,
+          body,
+          {
+            headers: {
+              Authorization: "kieffer-torricilia-barbosa"
+            }
           }
-        }
-      )
-      .then(() => {
-        alert("usuario criado!");
-        props.getUsuarios();
-        setEmail("");
-        setNome("");
-      })
-      .catch((err) => {
-        console.log("erro add", err.response);
-      });
+        )
+      alert("usuario criado!");
+      props.getUsuarios();
+      setEmail("");
+      setNome("");
+
+    } catch (erro) {
+      console.log("erro add", erro.response)
+    }
   };
 
   return (

@@ -10,6 +10,12 @@ import {
   BoxCadastro,
 } from "./Appstyle";
 
+const headers = {
+  headers: {
+    Authorization: "kieffer-torricilia-barbosa"
+  }
+}
+
 function App() {
   const [usuarios, setUsuarios] = useState([]);
   const [pageFlow, setPageFlow] = useState(1);
@@ -22,8 +28,9 @@ function App() {
   }, []);
 
   const getUsuarios = async () => {
-    
-  await axios
+    try{
+
+      const result = await axios
       .get(
         "https://us-central1-labenu-apis.cloudfunctions.net/labenusers/users",
         {
@@ -31,16 +38,29 @@ function App() {
             Authorization: "kieffer-torricilia-barbosa",
           },
         }
-      )
-      .then((res) => {
-        setUsuarios(res.data);
-      })
-      .catch((error) => {
-        console.log(error.response);
-      });
+        )
+        console.log(result.data)
+        setUsuarios(result.data)
+      }
+      catch(error){
+        console.log(error)
+      }
   };
 
-  const pesquisaUsuario = (pesquisa) => {
+  const pesquisaUsuario = async (pesquisa) => {
+    try {
+      const result = await axios.get(`https://us-central1-labenu-apis.cloudfunctions.net/labenusers/users/search?name=${nome}&email=${email}`, headers )
+
+      if(!result.data.length){
+        alert(`Não existe usuário com esse nome: ${nome} ou email: ${email}`)
+        getUsuarios()
+      }
+      
+      setUsuarios(result.data)
+
+    } catch (error) {
+      console.log(error)
+    }
    
   };
 
@@ -53,12 +73,7 @@ function App() {
   };
 
   const enviarDados = () => {
-    const novaPesquisa = {
-      nome,
-      email,
-    };
-    setPesquisa(novaPesquisa);
-   
+    pesquisaUsuario()
     setNome("")
     setEmail("")
     
@@ -105,7 +120,7 @@ function App() {
               )}
               
             </ContainerBarra>
-            {usuarios.map((usuario) => {
+            {usuarios.length > 0 ? usuarios.map((usuario) => {
               return (
                 <EditarUsuario
                   key={usuario.id}
@@ -115,7 +130,7 @@ function App() {
                   pageFlow={pageFlow}
                 />
               );
-            })}
+            }):<p>Loading...</p>}
           </>
         )}
         
@@ -125,3 +140,4 @@ function App() {
 }
 
 export default App;
+
